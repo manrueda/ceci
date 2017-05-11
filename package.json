@@ -5,5 +5,8 @@
   "main": "src/index.js",
   "repository": "git@github.com:ManRueda/ceci.git",
   "author": "Manuel Rueda <manuel.rueda.un@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^2.5.1"
+  }
 }
