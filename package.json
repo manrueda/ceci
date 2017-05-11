@@ -8,9 +8,12 @@
   "author": "Manuel Rueda <manuel.rueda.un@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
     "webpack": "^2.5.1"
   },
-  "script": {
-    "webpack": "webpack"
+  "scripts": {
+    "webpack": "webpack",
+    "watch": "webpack --watch"
   }
 }
