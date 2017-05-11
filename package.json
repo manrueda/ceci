@@ -2,11 +2,15 @@
   "name": "ceci",
   "version": "0.0.1",
   "description": "Google Chrome Extension Code Injector",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "module": "src/index.js",
   "repository": "git@github.com:ManRueda/ceci.git",
   "author": "Manuel Rueda <manuel.rueda.un@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "webpack": "^2.5.1"
+  },
+  "script": {
+    "webpack": "webpack"
   }
 }
