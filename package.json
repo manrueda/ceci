@@ -15,5 +15,8 @@
   "scripts": {
     "webpack": "webpack",
     "watch": "webpack --watch"
+  },
+  "dependencies": {
+    "uuid": "^3.0.1"
   }
 }

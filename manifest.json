@@ -1,0 +1,22 @@
+{
+    "name": "ceci test extensions",
+    "short_name": "ceci-test-extension",
+    "version": "0.0.1",
+    "minimum_chrome_version": "58.0",
+    "content_security_policy": "default-src 'self'  chrome-extension-resource: ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';  connect-src *; frame-src *",
+    "permissions": [
+        "*://*.google.com/*",
+        "*://*.google.com.ar/*",
+        "tabs",
+        "activeTab"
+    ],
+    "web_accessible_resources": [
+      "*"
+    ],
+    "manifest_version": 2,
+    "background": {
+        "scripts": ["extension/event-page.bundle.js"],
+        "persistent": false
+    },
+    "devtools_page": "extension/devtools-ceci.html"
+}

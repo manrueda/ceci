@@ -1,4 +1,5 @@
-var path = require('path')
+const path = require('path')
+const extWebpack = require('./webpack.config.ext.js')
 
 module.exports = [{
   entry: {
@@ -7,6 +8,7 @@ module.exports = [{
     'event-page': './src/event-page.js',
     'page-agent': './src/page-agent.js'
   },
+  devtool: 'source-map',
   module: {
     rules: [
       { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
@@ -18,6 +20,7 @@ module.exports = [{
   }
 }, {
   entry: './src/index.js',
+  devtool: 'source-map',
   module: {
     rules: [
       { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
@@ -30,4 +33,4 @@ module.exports = [{
     libraryTarget: 'umd',
     umdNamedDefine: true
   }
-}]
+}, extWebpack]
