@@ -1,6 +1,6 @@
 {
   "name": "ceci",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Google Chrome Extension Code Injector",
   "main": "./index.b.js",
   "module": "./index.js",
@@ -11,12 +11,15 @@
   "devDependencies": {
     "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
+    "cpx": "^1.5.0",
+    "rimraf": "^2.6.1",
     "webpack": "^2.5.1"
   },
   "scripts": {
     "webpack": "webpack",
     "watch": "webpack --watch",
-    "prepublishOnly": "webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/"
+    "pub": "npm publish .publish",
+    "build": "webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/"
   },
   "dependencies": {
     "uuid": "^3.0.1"
