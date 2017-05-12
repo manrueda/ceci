@@ -16,7 +16,7 @@ module.exports = [{
   },
   output: {
     path: path.resolve(__dirname, 'lib'),
-    filename: '[name].js'
+    filename: '[name].b.js'
   }
 }, {
   entry: './src/index.js',
@@ -28,7 +28,7 @@ module.exports = [{
   },
   output: {
     path: path.resolve(__dirname, 'lib'),
-    filename: 'index.js',
+    filename: 'index.b.js',
     library: 'ceci',
     libraryTarget: 'umd',
     umdNamedDefine: true

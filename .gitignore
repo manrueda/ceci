@@ -38,3 +38,4 @@ jspm_packages
 lib
 extension/*.bundle.js
 extension/*.bundle.js.map
+.publish
