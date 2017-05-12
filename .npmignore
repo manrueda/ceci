@@ -1,2 +1,4 @@
 extension
 manifest.json
+webpack.*
+.babelrc
