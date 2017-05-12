@@ -1,6 +1,6 @@
 {
   "name": "ceci",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Google Chrome Extension Code Injector",
   "main": "./index.b.js",
   "module": "./index.js",
