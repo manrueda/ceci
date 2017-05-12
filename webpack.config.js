@@ -6,7 +6,8 @@ module.exports = [{
     'content-script': './src/content-script.js',
     devtools: './src/devtools.js',
     'event-page': './src/event-page.js',
-    'page-agent': './src/page-agent.js'
+    'page-agent': './src/page-agent.js',
+    'page-executer': './src/page-executer.js'
   },
   devtool: 'source-map',
   module: {
