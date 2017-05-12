@@ -16,7 +16,7 @@
   "scripts": {
     "webpack": "webpack",
     "watch": "webpack --watch",
-    "publish": "webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/"
+    "publish": "webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/ && npm publish .publish"
   },
   "dependencies": {
     "uuid": "^3.0.1"
