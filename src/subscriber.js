@@ -1,34 +1,31 @@
-export default class Subscriber {
-  constructor (disposeHandler) {
-    this.disposeHandler = disposeHandler
-    this.emitHandlers = []
-    this.errorHandlers = []
-  }
+export default function Subscriber (disposeHandler) {
+  const emitHandlers = []
+  const errorHandlers = []
 
-  subscribe (forEmit, forError) {
+  this.subscribe = (forEmit, forError) => {
     if (forEmit) {
-      this.emitHandlers.push(forEmit)
+      emitHandlers.push(forEmit)
     }
     if (forError) {
-      this.errorHandlers.push(forError)
+      errorHandlers.push(forError)
     }
     return this
   }
 
-  emit (err, payload) {
+  this.emit = (err, payload) => {
     if (err) {
-      this.errorHandlers.map(cb => cb(err))
+      errorHandlers.map(cb => cb(err))
     }
     if (payload) {
-      this.emitHandlers.map(cb => cb(payload))
+      emitHandlers.map(cb => cb(payload))
     }
     return this
   }
 
-  dispose () {
-    this.disposeHandler()
-    delete this.emitHandlers
-    delete this.errorHandlers
+  this.dispose = () => {
+    disposeHandler()
+    emitHandlers.splice(0)
+    errorHandlers.splice(0)
     return this
   }
 }
