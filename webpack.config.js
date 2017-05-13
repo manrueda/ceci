@@ -7,7 +7,7 @@ module.exports = [{
     devtools: './src/devtools.js',
     'event-page': './src/event-page.js',
     'page-agent': './src/page-agent.js',
-    'page-executer': './src/page-executer.js'
+    'page-executor': './src/page-executor.js'
   },
   devtool: 'source-map',
   module: {

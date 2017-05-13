@@ -1,6 +1,6 @@
 /* global chrome */
 import { LIB_UNIQUE_ID } from './common'
-import { run, reactive, internalExecuteCode, internalExecuteReactiveCode } from './page-executer'
+import { run, reactive, internalExecuteCode, internalExecuteReactiveCode } from './page-executor'
 const internalChromeUrl = /chrome.*:\/\/.*/i
 const activeSubscribers = {}
 
