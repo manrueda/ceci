@@ -29,6 +29,7 @@ module.exports = [{
     ]
   },
   output: {
-    path: path.resolve(__dirname, 'lib')
+    path: path.resolve(__dirname, 'lib'),
+    filename: 'index.js'
   }
 }, extWebpack]
