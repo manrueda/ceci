@@ -53,12 +53,12 @@ export function internalExecuteReactiveCode (tabId, code, params, id) {
   return subs
 }
 
-export function executeCode (tabId, fn, params) {
+export function run (fn, params, tabId) {
   const code = fn.toString()
   return internalExecuteCode(tabId, code, params, uuid())
 }
 
-export function executeReactiveCode (tabId, fn, params) {
+export function reactive (fn, params, tabId) {
   const code = fn.toString()
   return internalExecuteReactiveCode(tabId, code, params, uuid())
 }

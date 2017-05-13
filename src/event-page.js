@@ -1,6 +1,6 @@
 /* global chrome */
 import { LIB_UNIQUE_ID } from './common'
-import { executeCode, executeReactiveCode, internalExecuteCode, internalExecuteReactiveCode } from './page-executer'
+import { run, reactive, internalExecuteCode, internalExecuteReactiveCode } from './page-executer'
 const internalChromeUrl = /chrome.*:\/\/.*/i
 const activeSubscribers = {}
 
@@ -95,5 +95,5 @@ export default function (contentScriptScriptUrl) {
 
   chrome.runtime.onConnect.addListener(runtimeConnectListener)
 
-  return { run: executeCode, reactive: executeReactiveCode }
+  return { run, reactive }
 }
