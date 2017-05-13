@@ -13,7 +13,7 @@ yarn add ceci
 ```
 
 ## Usage
-Check out the [documentation](wiki/Say-hi-to-ceci-💅)
+Check out the [documentation](https://github.com/ManRueda/ceci/wiki/Say-hi-to-ceci-💅)
 
 ## Contributing
 1. Fork it!
