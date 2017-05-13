@@ -1,6 +1,8 @@
 /* global chrome */
-import instanceExecuteCode, { sendCode } from './page-executer'
+import { LIB_UNIQUE_ID } from './common'
+import { executeCode, executeReactiveCode, internalExecuteCode, internalExecuteReactiveCode } from './page-executer'
 const internalChromeUrl = /chrome.*:\/\/.*/i
+const activeSubscribers = {}
 
 function hasPermissions (url) {
   return new Promise(function (resolve, reject) {
@@ -34,24 +36,54 @@ function tabChangeListener (tabId, changeInfo, tab, scriptUrl) {
 }
 
 function devtoolsMessageListener (message, sender, sendResponse, connection) {
-  sendCode(message.tabId, message.code, message.params, message.id).then(result => {
-    connection.postMessage({
-      result: result,
-      id: message.id
+  if (!message.tabId) {
+    return
+  }
+  if (message.type === 'run') {
+    internalExecuteCode(message.tabId, message.code, message.params, message.id).then(result => {
+      connection.postMessage({
+        type: 'result',
+        result,
+        id: message.id
+      })
+    }).catch(error => {
+      connection.postMessage({
+        type: 'error',
+        error,
+        id: message.id
+      })
     })
-  }).catch(error => {
-    connection.postMessage({
-      error: error,
-      id: message.id
+  }
+  if (message.type === 'reactive') {
+    const subs = internalExecuteReactiveCode(message.tabId, message.code, message.params, message.id)
+    subs.subscribe(result => {
+      connection.postMessage({
+        type: 'reactive-result',
+        result,
+        id: message.id
+      })
+    }, error => {
+      connection.postMessage({
+        type: 'reactive-error',
+        error,
+        id: message.id
+      })
     })
-  })
+    activeSubscribers[message.id] = subs
+  }
+  if (message.type === 'reactive-dispose' && activeSubscribers[message.id]) {
+    activeSubscribers[message.id].dispose()
+    delete activeSubscribers[message.id]
+  }
 }
 
 function runtimeConnectListener (connection) {
-  const handler = (message, sender, sendResponse) => devtoolsMessageListener(message, sender, sendResponse, connection)
+  if (connection.name === LIB_UNIQUE_ID) {
+    const handler = (message, sender, sendResponse) => devtoolsMessageListener(message, sender, sendResponse, connection)
 
-  connection.onMessage.addListener(handler)
-  connection.onDisconnect.addListener(() => connection.onMessage.removeListener(handler))
+    connection.onMessage.addListener(handler)
+    connection.onDisconnect.addListener(() => connection.onMessage.removeListener(handler))
+  }
 }
 
 export default function (contentScriptScriptUrl) {
@@ -59,5 +91,5 @@ export default function (contentScriptScriptUrl) {
 
   chrome.runtime.onConnect.addListener(runtimeConnectListener)
 
-  return instanceExecuteCode
+  return { run: executeCode, reactive: executeReactiveCode }
 }

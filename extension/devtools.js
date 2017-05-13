@@ -1,22 +1,10 @@
 import ceciDevtools from '../src/devtools.js'
 
-window.run = ceciDevtools()
-let runs = 0
+const {run, reactive} = ceciDevtools()
 
-const cls = setInterval(() => {
-  (i => {
-    console.info(`Start run: ${i}`)
-    window.run(function namedFn (a) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => resolve(a), 1)
-      })
-    }, [i]).then(a => {
-      console.info(`Ends run: ${i} -> return ${a}`)
-    })
-  })(runs)
+window.subscriber = reactive((cb, a) => {
+  var inter = setInterval(() => cb(null, a), 2000)
+  return () => clearInterval(inter)
+}, [10]).subscribe(console.log)
 
-  runs++
-  if (runs > 20) {
-    clearInterval(cls)
-  }
-}, 1)
+run((a) => a, [10]).then(console.log)

@@ -1,13 +1,32 @@
 /* global chrome */
 import uuid from 'uuid/v4'
+import Subscriber from './subscriber'
+
 const pendingCalls = {}
+const activeSubscribers = {}
 
 function executeCode (id, code, params) {
   window.postMessage({
     type: 'execute-code',
-    id: id,
-    code: code,
-    params: params
+    id,
+    code,
+    params
+  }, '*')
+}
+
+function executeReactiveCode (id, code, params) {
+  window.postMessage({
+    type: 'execute-code-reactive',
+    id,
+    code,
+    params
+  }, '*')
+}
+
+function disposeReactiveCode (id) {
+  window.postMessage({
+    type: 'dispose-code-reactive',
+    id
   }, '*')
 }
 
@@ -63,22 +82,48 @@ function siteMessageListener (message) {
         })
       }
       break
+    case 'execute-reactive-emit':
+      if (activeSubscribers[data.id]) {
+        activeSubscribers[data.id].emit(null, data.payload)
+      }
+      break
+    case 'execute-reactive-error':
+      data = normalizeData(data)
+      if (activeSubscribers[data.id]) {
+        activeSubscribers[data.id].emit(data.error)
+      }
+      break
   }
 }
 
 function runtimeMessageListener (request, sender, sendResponse) {
-  pendingCalls[request.id] = {
-    original: request,
-    callback: sendResponse
+  // sender.id -> Extension id
+  if (request.type === 'run') {
+    pendingCalls[request.id] = {
+      original: request,
+      callback: sendResponse
+    }
+    executeCode(request.id, request.code, request.params)
+    return true
   }
-  executeCode(request.id, request.code, request.params)
-  return true
+  if (request.type === 'reactive-run') {
+    const sub = instanceExecuteCodeReactive(request.code, request.params, request.id)
+    sub.subscribe(payload => {
+      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-emit', payload, id: request.id})
+    }, error => {
+      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-error', error, id: request.id})
+    })
+  }
+  if (request.type === 'reactive-dispose' && activeSubscribers[request.id]) {
+    activeSubscribers[request.id].dispose()
+  }
 }
 
 function instanceExecuteCode (fn, params) {
   return new Promise((resolve, reject) => {
     runtimeMessageListener({
       id: uuid(),
+      type: 'run',
       code: fn.toString(),
       params
     }, null, (response) => {
@@ -91,6 +136,17 @@ function instanceExecuteCode (fn, params) {
   })
 }
 
+function instanceExecuteCodeReactive (fn, params, id) {
+  id = id || uuid()
+  const subs = new Subscriber(() => {
+    disposeReactiveCode(id)
+    delete activeSubscribers[id]
+  })
+  activeSubscribers[id] = subs
+  executeReactiveCode(id, fn.toString(), params)
+  return subs
+}
+
 export default function (pageAgentScriptUrl) {
   window.addEventListener('message', siteMessageListener, false)
 
@@ -98,7 +154,7 @@ export default function (pageAgentScriptUrl) {
 
   return injectPageAgent(pageAgentScriptUrl).then(() => {
     console.info(`ceci - Page Agent injected: ${new Date()}`)
-    return instanceExecuteCode
+    return { run: instanceExecuteCode, reactive: instanceExecuteCodeReactive }
   }).catch(err => {
     console.warn(`ceci - Page Agent injection error: `, err)
   })

@@ -1,13 +1,31 @@
 /* global chrome */
 import uuid from 'uuid/v4'
+import Subscriber from './subscriber'
+const activeSubscribers = {}
 
-export function sendCode (tabId, code, params, id) {
+chrome.runtime.onMessage.addListener(message => {
+  if (activeSubscribers[message.id]) {
+    if (message.type === 'execute-reactive-emit') {
+      activeSubscribers[message.id].emit(null, message.payload)
+    }
+    if (message.type === 'execute-reactive-error') {
+      activeSubscribers[message.id].emit(message.error)
+    }
+  }
+})
+
+function sendMessage (tabId, code, params, id, type, cb) {
+  chrome.tabs.sendMessage(tabId, {
+    code,
+    type,
+    id,
+    params
+  }, cb)
+}
+
+export function internalExecuteCode (tabId, code, params, id) {
   return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tabId, {
-      code: code,
-      id: id,
-      params: params
-    }, (event) => {
+    sendMessage(tabId, code, params, id, 'run', event => {
       if (!event) {
         return
       }
@@ -20,7 +38,22 @@ export function sendCode (tabId, code, params, id) {
   })
 }
 
-export default function instanceExecuteCode (tabId, fn, params) {
+export function internalExecuteReactiveCode (tabId, code, params, id) {
+  const subs = new Subscriber(() => {
+    sendMessage(tabId, null, null, id, 'reactive-dispose')
+    delete activeSubscribers[id]
+  })
+  activeSubscribers[id] = subs
+  sendMessage(tabId, code, params, id, 'reactive-run')
+  return subs
+}
+
+export function executeCode (tabId, fn, params) {
   const code = fn.toString()
-  return sendCode(tabId, code, params, uuid())
+  return internalExecuteCode(tabId, code, params, uuid())
+}
+
+export function executeReactiveCode (tabId, fn, params) {
+  const code = fn.toString()
+  return internalExecuteReactiveCode(tabId, code, params, uuid())
 }

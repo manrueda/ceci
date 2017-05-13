@@ -1,11 +1,26 @@
-import uuid from 'uuid/v4'
 import hash from 'hash.js'
 const storedCode = {}
+const reactiveDisposers = {}
 
 function executeCode (id, code, params) {
   return codeSafeApply(id, code, params)
     .then(response => returnCodeExecution(response, id))
     .catch(error => errorCodeExecution(error, id))
+}
+
+function executeReactiveCode (id, code, params) {
+  params = [(err, payload) => {
+    if (err) {
+      reactiveError(err, id)
+    } else {
+      reactiveEmit(payload, id)
+    }
+  }, ...params]
+  codeSafeApply(id, code, params)
+    .then(disposer => {
+      reactiveDisposers[id] = disposer
+    })
+    .catch(error => reactiveError(error, id))
 }
 
 function parseCode (code, hash) {
@@ -62,9 +77,20 @@ function errorCodeExecution (error, id) {
   }, '*')
 }
 
-function instanceExecuteCode (fn, params) {
-  const code = fn.toString()
-  return executeCode(uuid(), code, params)
+function reactiveEmit (payload, id) {
+  window.postMessage({
+    type: 'execute-reactive-emit',
+    id: id,
+    payload: payload
+  }, '*')
+}
+
+function reactiveError (error, id) {
+  window.postMessage({
+    type: 'execute-reactive-error',
+    id: id,
+    error: error
+  }, '*')
 }
 
 export default function () {
@@ -77,7 +103,14 @@ export default function () {
       case 'execute-code':
         executeCode(event.data.id, event.data.code, event.data.params)
         break
+      case 'execute-code-reactive':
+        executeReactiveCode(event.data.id, event.data.code, event.data.params)
+        break
+      case 'dispose-code-reactive':
+        if (reactiveDisposers[event.data.id]) {
+          reactiveDisposers[event.data.id]()
+        }
+        break
     }
   }, false)
-  return instanceExecuteCode
 }
