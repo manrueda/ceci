@@ -8,6 +8,14 @@ function executeCode (id, code, params) {
     .catch(error => errorCodeExecution(error, id))
 }
 
+function parseCode (code, hash) {
+  let protectedCode = `(${code})`
+  let fn = eval(protectedCode) // eslint-disable-line no-eval
+  let commentedCode = `${protectedCode}\n//# sourceURL=ceci://ceci/${fn.name || 'anon'}-${hash}.js`
+  fn = eval(commentedCode) // eslint-disable-line no-eval
+  return fn
+}
+
 function codeSafeApply (id, code, params) {
   return new Promise(function (resolve, reject) {
     let fn
@@ -16,9 +24,7 @@ function codeSafeApply (id, code, params) {
     if (storedCode[codeHash]) {
       fn = storedCode[codeHash]
     } else {
-      code = `${code}\n//# sourceURL=ceci://ceci/evals/eval-${id}.js`
-      fn = eval(code)
-      storedCode[codeHash] = fn
+      storedCode[codeHash] = fn = parseCode(code, codeHash)
     }
 
     try {

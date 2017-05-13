@@ -13,13 +13,15 @@
     "babel-loader": "^7.0.0",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.1",
+    "standard": "^10.0.2",
     "webpack": "^2.5.1"
   },
   "scripts": {
     "webpack": "webpack",
     "watch": "webpack --watch",
     "pub": "npm publish .publish",
-    "build": "webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/"
+    "lint": "standard",
+    "build": "npm run lint && webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/"
   },
   "dependencies": {
     "hash.js": "^1.0.3",

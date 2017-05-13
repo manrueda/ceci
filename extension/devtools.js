@@ -3,11 +3,11 @@ import ceciDevtools from '../src/devtools.js'
 window.run = ceciDevtools()
 let runs = 0
 
-const cls = setInterval(function () {
+const cls = setInterval(() => {
   (i => {
     console.info(`Start run: ${i}`)
-    window.run((a) => {
-      return new Promise(function(resolve, reject) {
+    window.run(function namedFn (a) {
+      return new Promise((resolve, reject) => {
         setTimeout(() => resolve(a), 1)
       })
     }, [i]).then(a => {
