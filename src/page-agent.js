@@ -1,4 +1,6 @@
 import uuid from 'uuid/v4'
+import hash from 'hash.js'
+const storedCode = {}
 
 function executeCode (id, code, params) {
   return codeSafeApply(id, code, params)
@@ -8,8 +10,17 @@ function executeCode (id, code, params) {
 
 function codeSafeApply (id, code, params) {
   return new Promise(function (resolve, reject) {
-    code = `${code}\n//# sourceURL=ceci://ceci/evals/eval-${id}.js`
-    const fn = eval(code)
+    let fn
+    let codeHash = hash.sha256().update(code).digest('hex')
+
+    if (storedCode[codeHash]) {
+      fn = storedCode[codeHash]
+    } else {
+      code = `${code}\n//# sourceURL=ceci://ceci/evals/eval-${id}.js`
+      fn = eval(code)
+      storedCode[codeHash] = fn
+    }
+
     try {
       let response = fn.apply(window, params)
       if (response instanceof Promise) {

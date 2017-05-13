@@ -22,6 +22,7 @@
     "build": "webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/"
   },
   "dependencies": {
+    "hash.js": "^1.0.3",
     "uuid": "^3.0.1"
   }
 }
