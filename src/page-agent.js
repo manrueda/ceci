@@ -90,6 +90,12 @@ function reactiveEmit (payload, id) {
 }
 
 function reactiveError (error, id) {
+  if (error instanceof Error) {
+    error = {
+      message: error.message,
+      stack: error.stack
+    }
+  }
   window.postMessage({
     type: 'execute-reactive-error',
     origin: LIB_UNIQUE_ID,

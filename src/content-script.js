@@ -1,41 +1,12 @@
 /* global chrome */
 import uuid from 'uuid/v4'
-import { LIB_UNIQUE_ID } from './common'
+import { LIB_UNIQUE_ID, postMessage } from './common'
 import Subscriber from './subscriber'
 
-const pendingCalls = {}
-const activeSubscribers = {}
-
-function executeCode (id, code, params) {
-  window.postMessage({
-    type: 'execute-code',
-    origin: LIB_UNIQUE_ID,
-    id,
-    code,
-    params
-  }, '*')
-}
-
-function executeReactiveCode (id, code, params) {
-  window.postMessage({
-    type: 'execute-code-reactive',
-    origin: LIB_UNIQUE_ID,
-    id,
-    code,
-    params
-  }, '*')
-}
-
-function disposeReactiveCode (id) {
-  window.postMessage({
-    type: 'dispose-code-reactive',
-    origin: LIB_UNIQUE_ID,
-    id
-  }, '*')
-}
+const pendings = {}
 
 function normalizeData (data) {
-  if (data.error.message && data.error.stack) {
+  if (data.error && data.error.message && data.error.stack) {
     const stack = data.error.stack
     data.error = new Error(data.error.message)
     data.error.stack = stack
@@ -69,32 +40,21 @@ function siteMessageListener (message) {
 
   let { data } = message
   switch (data.type) {
-    case 'execute-return':
-      if (pendingCalls[data.id]) {
-        pendingCalls[data.id].callback({
-          type: 'success',
-          return: data.return
-        })
-      }
-      break
     case 'execute-error':
+    case 'execute-return':
       data = normalizeData(data)
-      if (pendingCalls[data.id]) {
-        pendingCalls[data.id].callback({
-          type: 'error',
-          return: data.error
+      if (pendings[data.id]) {
+        pendings[data.id].callback({
+          type: data.type === 'execute-error' ? 'error' : 'success',
+          return: data.error || data.return
         })
       }
       break
     case 'execute-reactive-emit':
-      if (activeSubscribers[data.id]) {
-        activeSubscribers[data.id].emit(null, data.payload)
-      }
-      break
     case 'execute-reactive-error':
       data = normalizeData(data)
-      if (activeSubscribers[data.id]) {
-        activeSubscribers[data.id].emit(data.error)
+      if (pendings[data.id]) {
+        pendings[data.id].emit(data.error, data.payload)
       }
       break
   }
@@ -105,11 +65,15 @@ function runtimeMessageListener (request, sender, sendResponse) {
     return
   }
   if (request.type === 'run') {
-    pendingCalls[request.id] = {
+    pendings[request.id] = {
       original: request,
       callback: sendResponse
     }
-    executeCode(request.id, request.code, request.params)
+    postMessage('execute-code', {
+      id: request.id,
+      code: request.code,
+      params: request.params
+    })
     return true
   }
   if (request.type === 'reactive-run') {
@@ -120,8 +84,8 @@ function runtimeMessageListener (request, sender, sendResponse) {
       chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-error', error, id: request.id})
     })
   }
-  if (request.type === 'reactive-dispose' && activeSubscribers[request.id]) {
-    activeSubscribers[request.id].dispose()
+  if (request.type === 'reactive-dispose' && pendings[request.id]) {
+    pendings[request.id].dispose()
   }
 }
 
@@ -146,11 +110,17 @@ function instanceExecuteCode (fn, params) {
 function instanceExecuteCodeReactive (fn, params, id) {
   id = id || uuid()
   const subs = new Subscriber(() => {
-    disposeReactiveCode(id)
-    delete activeSubscribers[id]
+    postMessage('dispose-code-reactive', {
+      id
+    })
+    delete pendings[id]
   })
-  activeSubscribers[id] = subs
-  executeReactiveCode(id, fn.toString(), params)
+  pendings[id] = subs
+  postMessage('execute-code-reactive', {
+    id,
+    code: fn.toString(),
+    params: params
+  })
   return subs
 }
 
