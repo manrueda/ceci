@@ -7,7 +7,8 @@ module.exports = [{
     devtools: './src/devtools.js',
     'event-page': './src/event-page.js',
     'page-agent': './src/page-agent.js',
-    'page-executer': './src/page-executer.js'
+    'page-executor': './src/page-executor.js',
+    subscriber: './src/subscriber.js'
   },
   devtool: 'source-map',
   module: {
@@ -28,10 +29,6 @@ module.exports = [{
     ]
   },
   output: {
-    path: path.resolve(__dirname, 'lib'),
-    filename: 'index.b.js',
-    library: 'ceci',
-    libraryTarget: 'umd',
-    umdNamedDefine: true
+    path: path.resolve(__dirname, 'lib')
   }
 }, extWebpack]

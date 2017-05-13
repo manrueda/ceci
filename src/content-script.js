@@ -1,18 +1,12 @@
 /* global chrome */
 import uuid from 'uuid/v4'
-const pendingCalls = {}
+import { LIB_UNIQUE_ID, postMessage } from './common'
+import Subscriber from './subscriber'
 
-function executeCode (id, code, params) {
-  window.postMessage({
-    type: 'execute-code',
-    id: id,
-    code: code,
-    params: params
-  }, '*')
-}
+const pendings = {}
 
 function normalizeData (data) {
-  if (data.error.message && data.error.stack) {
+  if (data.error && data.error.message && data.error.stack) {
     const stack = data.error.stack
     data.error = new Error(data.error.message)
     data.error.stack = stack
@@ -40,45 +34,67 @@ function injectPageAgent (scriptUrl) {
 }
 
 function siteMessageListener (message) {
-  if (message.source !== window) {
+  if (message.source !== window || message.data.origin !== LIB_UNIQUE_ID) {
     return
   }
 
   let { data } = message
   switch (data.type) {
+    case 'execute-error':
     case 'execute-return':
-      if (pendingCalls[data.id]) {
-        pendingCalls[data.id].callback({
-          type: 'success',
-          return: data.return
+      data = normalizeData(data)
+      if (pendings[data.id]) {
+        pendings[data.id].callback({
+          type: data.type === 'execute-error' ? 'error' : 'success',
+          return: data.error || data.return
         })
       }
       break
-    case 'execute-error':
+    case 'execute-reactive-emit':
+    case 'execute-reactive-error':
       data = normalizeData(data)
-      if (pendingCalls[data.id]) {
-        pendingCalls[data.id].callback({
-          type: 'error',
-          return: data.error
-        })
+      if (pendings[data.id]) {
+        pendings[data.id].emit(data.error, data.payload)
       }
       break
   }
 }
 
 function runtimeMessageListener (request, sender, sendResponse) {
-  pendingCalls[request.id] = {
-    original: request,
-    callback: sendResponse
+  if (request.origin !== LIB_UNIQUE_ID) {
+    return
   }
-  executeCode(request.id, request.code, request.params)
-  return true
+  if (request.type === 'run') {
+    pendings[request.id] = {
+      original: request,
+      callback: sendResponse
+    }
+    postMessage('execute-code', {
+      id: request.id,
+      code: request.code,
+      params: request.params
+    })
+    return true
+  }
+  if (request.type === 'reactive-run') {
+    const sub = instanceExecuteCodeReactive(request.code, request.params, request.id)
+    sub.subscribe(payload => {
+      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-emit', payload, id: request.id})
+    }, error => {
+      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-error', error, id: request.id})
+    })
+  }
+  if (request.type === 'reactive-dispose' && pendings[request.id]) {
+    pendings[request.id].dispose()
+  }
 }
 
 function instanceExecuteCode (fn, params) {
   return new Promise((resolve, reject) => {
     runtimeMessageListener({
       id: uuid(),
+      type: 'run',
+      origin: LIB_UNIQUE_ID,
       code: fn.toString(),
       params
     }, null, (response) => {
@@ -91,6 +107,23 @@ function instanceExecuteCode (fn, params) {
   })
 }
 
+function instanceExecuteCodeReactive (fn, params, id) {
+  id = id || uuid()
+  const subs = new Subscriber(() => {
+    postMessage('dispose-code-reactive', {
+      id
+    })
+    delete pendings[id]
+  })
+  pendings[id] = subs
+  postMessage('execute-code-reactive', {
+    id,
+    code: fn.toString(),
+    params: params
+  })
+  return subs
+}
+
 export default function (pageAgentScriptUrl) {
   window.addEventListener('message', siteMessageListener, false)
 
@@ -98,7 +131,7 @@ export default function (pageAgentScriptUrl) {
 
   return injectPageAgent(pageAgentScriptUrl).then(() => {
     console.info(`ceci - Page Agent injected: ${new Date()}`)
-    return instanceExecuteCode
+    return { run: instanceExecuteCode, reactive: instanceExecuteCodeReactive }
   }).catch(err => {
     console.warn(`ceci - Page Agent injection error: `, err)
   })
