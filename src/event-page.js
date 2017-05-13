@@ -36,18 +36,20 @@ function tabChangeListener (tabId, changeInfo, tab, scriptUrl) {
 }
 
 function devtoolsMessageListener (message, sender, sendResponse, connection) {
-  if (!message.tabId) {
+  if (!message.tabId || message.origin !== LIB_UNIQUE_ID) {
     return
   }
   if (message.type === 'run') {
     internalExecuteCode(message.tabId, message.code, message.params, message.id).then(result => {
       connection.postMessage({
         type: 'result',
+        origin: LIB_UNIQUE_ID,
         result,
         id: message.id
       })
     }).catch(error => {
       connection.postMessage({
+        origin: LIB_UNIQUE_ID,
         type: 'error',
         error,
         id: message.id
@@ -59,12 +61,14 @@ function devtoolsMessageListener (message, sender, sendResponse, connection) {
     subs.subscribe(result => {
       connection.postMessage({
         type: 'reactive-result',
+        origin: LIB_UNIQUE_ID,
         result,
         id: message.id
       })
     }, error => {
       connection.postMessage({
         type: 'reactive-error',
+        origin: LIB_UNIQUE_ID,
         error,
         id: message.id
       })

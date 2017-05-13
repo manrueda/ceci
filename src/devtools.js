@@ -17,6 +17,7 @@ function executeFunction (fn, params) {
     }
     eventPageConnection.postMessage({
       tabId: chrome.devtools.inspectedWindow.tabId,
+      origin: LIB_UNIQUE_ID,
       type: 'run',
       code: code,
       id: id,
@@ -31,6 +32,7 @@ function executeFunctionReactive (fn, params) {
   const subs = new Subscriber(() => {
     eventPageConnection.postMessage({
       tabId: chrome.devtools.inspectedWindow.tabId,
+      origin: LIB_UNIQUE_ID,
       type: 'reactive-dispose',
       id: id
     })
@@ -40,6 +42,7 @@ function executeFunctionReactive (fn, params) {
 
   eventPageConnection.postMessage({
     tabId: chrome.devtools.inspectedWindow.tabId,
+    origin: LIB_UNIQUE_ID,
     type: 'reactive',
     code: code,
     id: id,
@@ -50,6 +53,9 @@ function executeFunctionReactive (fn, params) {
 }
 
 function returnHandler (message) {
+  if (message.origin !== LIB_UNIQUE_ID) {
+    return
+  }
   if (pending[message.id]) {
     if (message.type === 'error' && message.error) {
       pending[message.id].reject(message.error)

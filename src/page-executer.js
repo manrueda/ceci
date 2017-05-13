@@ -1,9 +1,13 @@
 /* global chrome */
 import uuid from 'uuid/v4'
 import Subscriber from './subscriber'
+import { LIB_UNIQUE_ID } from './common'
 const activeSubscribers = {}
 
 chrome.runtime.onMessage.addListener(message => {
+  if (message.origin !== LIB_UNIQUE_ID) {
+    return
+  }
   if (activeSubscribers[message.id]) {
     if (message.type === 'execute-reactive-emit') {
       activeSubscribers[message.id].emit(null, message.payload)
@@ -19,6 +23,7 @@ function sendMessage (tabId, code, params, id, type, cb) {
     code,
     type,
     id,
+    origin: LIB_UNIQUE_ID,
     params
   }, cb)
 }

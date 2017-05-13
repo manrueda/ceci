@@ -1,4 +1,5 @@
 import hash from 'hash.js'
+import { LIB_UNIQUE_ID } from './common'
 const storedCode = {}
 const reactiveDisposers = {}
 
@@ -58,6 +59,7 @@ function codeSafeApply (id, code, params) {
 function returnCodeExecution (response, id) {
   window.postMessage({
     type: 'execute-return',
+    origin: LIB_UNIQUE_ID,
     id: id,
     return: response
   }, '*')
@@ -72,6 +74,7 @@ function errorCodeExecution (error, id) {
   }
   window.postMessage({
     type: 'execute-error',
+    origin: LIB_UNIQUE_ID,
     id: id,
     error: error
   }, '*')
@@ -80,6 +83,7 @@ function errorCodeExecution (error, id) {
 function reactiveEmit (payload, id) {
   window.postMessage({
     type: 'execute-reactive-emit',
+    origin: LIB_UNIQUE_ID,
     id: id,
     payload: payload
   }, '*')
@@ -88,6 +92,7 @@ function reactiveEmit (payload, id) {
 function reactiveError (error, id) {
   window.postMessage({
     type: 'execute-reactive-error',
+    origin: LIB_UNIQUE_ID,
     id: id,
     error: error
   }, '*')
@@ -95,7 +100,7 @@ function reactiveError (error, id) {
 
 export default function () {
   window.addEventListener('message', event => {
-    if (event.source !== window) {
+    if (event.source !== window || event.data.origin !== LIB_UNIQUE_ID) {
       return
     }
 

@@ -1,5 +1,6 @@
 /* global chrome */
 import uuid from 'uuid/v4'
+import { LIB_UNIQUE_ID } from './common'
 import Subscriber from './subscriber'
 
 const pendingCalls = {}
@@ -8,6 +9,7 @@ const activeSubscribers = {}
 function executeCode (id, code, params) {
   window.postMessage({
     type: 'execute-code',
+    origin: LIB_UNIQUE_ID,
     id,
     code,
     params
@@ -17,6 +19,7 @@ function executeCode (id, code, params) {
 function executeReactiveCode (id, code, params) {
   window.postMessage({
     type: 'execute-code-reactive',
+    origin: LIB_UNIQUE_ID,
     id,
     code,
     params
@@ -26,6 +29,7 @@ function executeReactiveCode (id, code, params) {
 function disposeReactiveCode (id) {
   window.postMessage({
     type: 'dispose-code-reactive',
+    origin: LIB_UNIQUE_ID,
     id
   }, '*')
 }
@@ -59,7 +63,7 @@ function injectPageAgent (scriptUrl) {
 }
 
 function siteMessageListener (message) {
-  if (message.source !== window) {
+  if (message.source !== window || message.data.origin !== LIB_UNIQUE_ID) {
     return
   }
 
@@ -97,7 +101,9 @@ function siteMessageListener (message) {
 }
 
 function runtimeMessageListener (request, sender, sendResponse) {
-  // sender.id -> Extension id
+  if (request.origin !== LIB_UNIQUE_ID) {
+    return
+  }
   if (request.type === 'run') {
     pendingCalls[request.id] = {
       original: request,
@@ -124,6 +130,7 @@ function instanceExecuteCode (fn, params) {
     runtimeMessageListener({
       id: uuid(),
       type: 'run',
+      origin: LIB_UNIQUE_ID,
       code: fn.toString(),
       params
     }, null, (response) => {
