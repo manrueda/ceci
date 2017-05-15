@@ -20,6 +20,12 @@ function injectContentScript (tab, scriptUrl) {
   })
 }
 
+function getAllTabs () {
+  return new Promise(function (resolve, reject) {
+    chrome.tabs.query({}, resolve)
+  })
+}
+
 function tabChangeListener (tabId, changeInfo, tab, scriptUrl) {
   if (changeInfo.status === 'complete' && !internalChromeUrl.test(tab.url)) {
     hasPermissions(tab.url)
@@ -90,9 +96,22 @@ function runtimeConnectListener (connection) {
   }
 }
 
+function runtimeInstallListener (scriptUrl) {
+  getAllTabs()
+  .then(tabs => tabs.filter(tab => !internalChromeUrl.test(tab.url)))
+  .then(tabs => Promise.all(tabs.map(tab => hasPermissions(tab.url)
+    .then(has => {
+      return has ? tab : null
+    }))
+  ))
+  .then(tabs => tabs.filter(tab => !!tab))
+  .then(tabs => tabs.forEach(tab => injectContentScript(tab, scriptUrl)))
+}
+
 export default function (contentScriptScriptUrl) {
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => tabChangeListener(tabId, changeInfo, tab, contentScriptScriptUrl))
 
+  chrome.runtime.onInstalled.addListener(() => runtimeInstallListener(contentScriptScriptUrl))
   chrome.runtime.onConnect.addListener(runtimeConnectListener)
 
   return { run, reactive }
