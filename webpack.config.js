@@ -8,9 +8,14 @@ module.exports = [{
     'event-page': './src/event-page.js',
     'page-agent': './src/page-agent.js',
     'page-executor': './src/page-executor.js',
-    subscriber: './src/subscriber.js'
+    subscriber: './src/subscriber.js',
+    index: './src/index.js'
   },
   devtool: 'source-map',
+  externals: {
+    'uuid/v4': 'uuid/v4',
+    'hash.js': 'hash.js'
+  },
   module: {
     rules: [
       { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
@@ -18,18 +23,6 @@ module.exports = [{
   },
   output: {
     path: path.resolve(__dirname, 'lib'),
-    filename: '[name].b.js'
-  }
-}, {
-  entry: './src/index.js',
-  devtool: 'source-map',
-  module: {
-    rules: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
-    ]
-  },
-  output: {
-    path: path.resolve(__dirname, 'lib'),
-    filename: 'index.js'
+    filename: '[name].es5.js'
   }
 }, extWebpack]

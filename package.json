@@ -1,6 +1,6 @@
 {
   "name": "ceci",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Google Chrome Extension Code Injector",
   "module": "./index.js",
   "jsnext:main": "./index.js",
@@ -8,6 +8,7 @@
   "author": "Manuel Rueda <manuel.rueda.un@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "^6.24.1",
     "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
@@ -21,7 +22,8 @@
     "watch": "webpack --watch",
     "pub": "npm publish .publish",
     "lint": "standard",
-    "build": "npm run lint && webpack && rimraf .publish && cpx src/* .publish/ && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/"
+    "build": "npm run lint && rimraf lib && npm run transpile && webpack && rimraf .publish && cpx lib/* .publish/ && cpx package.json .publish/ && cpx LICENSE.md .publish/ && cpx README.md .publish/",
+    "transpile": "babel src --out-dir lib --source-maps"
   },
   "dependencies": {
     "hash.js": "^1.0.3",
