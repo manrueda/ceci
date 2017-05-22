@@ -79,9 +79,9 @@ function runtimeMessageListener (request, sender, sendResponse) {
   if (request.type === 'reactive-run') {
     const sub = instanceExecuteCodeReactive(request.code, request.params, request.id)
     sub.subscribe(payload => {
-      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-emit', payload, id: request.id})
+      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-emit', payload, id: request.id, origin: LIB_UNIQUE_ID})
     }, error => {
-      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-error', error, id: request.id})
+      chrome.runtime.sendMessage(sender.id, {type: 'execute-reactive-error', error, id: request.id, origin: LIB_UNIQUE_ID})
     })
   }
   if (request.type === 'reactive-dispose' && pendings[request.id]) {
