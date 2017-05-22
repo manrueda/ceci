@@ -1,5 +1,5 @@
 /* global chrome */
-import { LIB_UNIQUE_ID } from './common'
+import { LIB_UNIQUE_ID, DEBUG } from './common'
 import { run, reactive, internalExecuteCode, internalExecuteReactiveCode } from './page-executor'
 const internalChromeUrl = /chrome.*:\/\/.*/i
 const activeSubscribers = {}
@@ -34,9 +34,13 @@ function tabChangeListener (tabId, changeInfo, tab, scriptUrl) {
           return injectContentScript(tab, scriptUrl)
         }
       }).then(() => {
-        console.info(`ceci - Content Script injected: ${new Date()}`)
+        if (DEBUG) {
+          console.info(`ceci - Content Script injected: ${new Date()}`)
+        }
       }).catch(err => {
-        console.warn(`ceci - Content Script injection error: `, err)
+        if (DEBUG) {
+          console.warn(`ceci - Content Script injection error: `, err)
+        }
       })
   }
 }

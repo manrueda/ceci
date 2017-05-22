@@ -1,6 +1,6 @@
 /* global chrome */
 import uuid from 'uuid/v4'
-import { LIB_UNIQUE_ID, postMessage } from './common'
+import { LIB_UNIQUE_ID, postMessage, DEBUG } from './common'
 import Subscriber from './subscriber'
 
 const pendings = {}
@@ -130,9 +130,13 @@ export default function (pageAgentScriptUrl) {
   chrome.runtime.onMessage.addListener(runtimeMessageListener)
 
   return injectPageAgent(pageAgentScriptUrl).then(() => {
-    console.info(`ceci - Page Agent injected: ${new Date()}`)
+    if (DEBUG) {
+      console.info(`ceci - Page Agent injected: ${new Date()}`)
+    }
     return { run: instanceExecuteCode, reactive: instanceExecuteCodeReactive }
   }).catch(err => {
-    console.warn(`ceci - Page Agent injection error: `, err)
+    if (DEBUG) {
+      console.warn(`ceci - Page Agent injection error: `, err)
+    }
   })
 }
