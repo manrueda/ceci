@@ -20,6 +20,14 @@ function injectContentScript (tab, scriptUrl) {
   })
 }
 
+function hasBeingInjected (tab) {
+  return new Promise(function (resolve, reject) {
+    chrome.tabs.executeScript(tab.id, {
+      code: `window['${LIB_UNIQUE_ID}']`
+    }, (arr) => resolve(!!arr[0]))
+  })
+}
+
 function getAllTabs () {
   return new Promise(function (resolve, reject) {
     chrome.tabs.query({}, resolve)
@@ -29,8 +37,15 @@ function getAllTabs () {
 function tabChangeListener (tabId, changeInfo, tab, scriptUrl) {
   if (changeInfo.status === 'complete' && !internalChromeUrl.test(tab.url)) {
     hasPermissions(tab.url)
-      .then(has => {
-        if (has) {
+      .then(next => {
+        if (next) {
+          return hasBeingInjected(tab)
+        } else {
+          return next
+        }
+      })
+      .then(next => {
+        if (!next) {
           return injectContentScript(tab, scriptUrl)
         }
       }).then(() => {

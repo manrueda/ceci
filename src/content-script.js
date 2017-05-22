@@ -124,6 +124,8 @@ function instanceExecuteCodeReactive (fn, params, id) {
   return subs
 }
 
+window[LIB_UNIQUE_ID] = true
+
 export default function (pageAgentScriptUrl) {
   window.addEventListener('message', siteMessageListener, false)
 

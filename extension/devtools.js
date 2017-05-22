@@ -1,7 +1,7 @@
 import ceciDevtools from '../src/devtools.js'
 
-const {run, reactive} = ceciDevtools()
-
+/* const {run, reactive} = */ceciDevtools()
+/*
 window.subscriber = reactive((cb, a) => {
   var inter = setInterval(() => cb(null, a), 2000)
   return () => clearInterval(inter)
@@ -14,3 +14,4 @@ window.subscriber2 = reactive((cb, a) => {
 
 run((a) => a, [10]).then((a) => console.log(a))
 run((a) => { throw new Error('error') }, [10]).catch((a) => console.warn(a))
+*/

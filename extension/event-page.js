@@ -1,8 +1,7 @@
-/* global chrome */
 import ceciEventPage from '../src/event-page.js'
 
-const { run, reactive } = ceciEventPage('extension/content-script.bundle.js')
-
+/* const { run, reactive } = */ceciEventPage('extension/content-script.bundle.js')
+/*
 chrome.tabs.query({
   url: '*://*.google.com.ar/*'
 }, (tabs) => {
@@ -21,3 +20,4 @@ chrome.tabs.query({
   run(currentTab.id, (a) => a, [10]).then((a) => console.log(a))
   run(currentTab.id, (a) => { throw new Error('error') }, [10]).catch((a) => console.warn(a))
 })
+*/

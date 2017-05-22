@@ -1,5 +1,5 @@
-import ceciContentScript from '../src/content-script.js'
-
+import '../src/content-script.js'
+/*
 ceciContentScript('extension/page-agent.bundle.js').then(({run, reactive}) => {
   window.subscriber = reactive((cb, a) => {
     var inter = setInterval(() => cb(null, a), 2000)
@@ -14,3 +14,4 @@ ceciContentScript('extension/page-agent.bundle.js').then(({run, reactive}) => {
   run((a) => a, [10]).then((a) => console.log(a))
   run((a) => { throw new Error('error') }, [10]).catch((a) => console.warn(a))
 })
+*/

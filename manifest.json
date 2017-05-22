@@ -5,8 +5,7 @@
     "minimum_chrome_version": "58.0",
     "content_security_policy": "default-src 'self'  chrome-extension-resource: ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';  connect-src *; frame-src *",
     "permissions": [
-        "*://*.google.com/*",
-        "*://*.google.com.ar/*",
+        "*://*/*",
         "tabs",
         "activeTab"
     ],
